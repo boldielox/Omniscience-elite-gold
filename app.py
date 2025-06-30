@@ -7,6 +7,11 @@ st.title("Omniscience: Sports Betting Chatbot")
 
 # Load your OpenAI API key from Streamlit secrets or environment variable
 api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
+
+if not api_key:
+    st.error("OpenAI API key not found! Please set it in Streamlit secrets or as an environment variable.")
+    st.stop()
+
 client = openai.OpenAI(api_key=api_key)
 
 # Upload data
