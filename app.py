@@ -1,11 +1,13 @@
 import streamlit as st
-import openai  # pip install openai
+import openai
 import pandas as pd
+import os
 
 st.title("Omniscience: Sports Betting Chatbot")
 
-# Set your OpenAI API key here
-openai.api_key = "YOUR_OPENAI_API_KEY"
+# Load your OpenAI API key from Streamlit secrets or environment variable
+api_key = st.secrets["OPENAI_API_KEY"] if "OPENAI_API_KEY" in st.secrets else os.getenv("OPENAI_API_KEY")
+client = openai.OpenAI(api_key=api_key)
 
 # Upload data
 uploaded_file = st.file_uploader("Upload your matchup data (CSV)", type="csv")
@@ -15,7 +17,7 @@ if uploaded_file:
 else:
     data = None
 
-# Chat interface
+# Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -26,20 +28,21 @@ if user_input:
 
     # Simple prediction logic (replace with your model)
     if data is not None:
-        # Example: Just echo the first row as a "prediction"
         prediction = data.iloc[0].to_dict()
         insight = f"Here's a sample prediction: {prediction}"
     else:
         insight = "Please upload data for predictions."
 
-    # Use OpenAI to generate a conversational response
-    prompt = f"You are Omniscience, an elite sports betting AI. {insight} User asked: {user_input}"
-    response = openai.ChatCompletion.create(
+    # Prepare messages for OpenAI
+    messages = [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
+    messages.append({"role": "assistant", "content": insight})
+
+    # Call OpenAI Chat API (new syntax)
+    response = client.chat.completions.create(
         model="gpt-3.5-turbo",
-        messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages] +
-                 [{"role": "assistant", "content": insight}]
+        messages=messages
     )
-    answer = response.choices[0].message["content"]
+    answer = response.choices[0].message.content
     st.session_state.messages.append({"role": "assistant", "content": answer})
 
 # Display chat history
