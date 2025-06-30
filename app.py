@@ -186,7 +186,7 @@ with st.sidebar:
                 st.session_state.dataset_id = dataset_id
                 st.session_state.upload_status = "complete"
                 st.success(f"Loaded dataset: {metadata['name']}")
-                st.experimental_rerun()
+                st.rerun()  # Using st.rerun() instead of experimental_rerun
     
     # Upload new dataset
     st.subheader("Upload New Dataset")
@@ -237,7 +237,7 @@ with st.sidebar:
                 status_text.empty()
                 st.success(f"✅ Successfully processed and saved {len(cleaned_data)} rows of data!")
                 time.sleep(1)
-                st.experimental_rerun()
+                st.rerun()  # Using st.rerun() instead of experimental_rerun
                 
         except Exception as e:
             st.error(f"Error processing file: {e}")
@@ -273,7 +273,7 @@ for i, msg in enumerate(st.session_state.messages):
                 if st.button("👍", key=f"like_{i}"):
                     st.session_state.feedback[i] = "positive"
                     save_learning_data()
-                    st.experimental_rerun()
+                    st.rerun()  # Using st.rerun() instead of experimental_rerun
             with col2:
                 if st.button("👎", key=f"dislike_{i}"):
                     st.session_state.feedback[i] = "negative"
@@ -282,12 +282,17 @@ for i, msg in enumerate(st.session_state.messages):
                     if st.button("Submit Correction", key=f"submit_{i}"):
                         st.session_state.feedback[i] = {"rating": "negative", "correction": correction}
                         save_learning_data()
-                        st.experimental_rerun()
+                        st.rerun()  # Using st.rerun() instead of experimental_rerun
 
-# Chat input
-user_input = st.chat_input("Ask about sports betting, games, or predictions...")
+# Chat input with explicit send button
+st.write("Ask about sports betting, games, or predictions:")
+col1, col2 = st.columns([5, 1])
+with col1:
+    user_input = st.text_area("Your message:", key="user_message", height=100)
+with col2:
+    send_button = st.button("Send", key="send_message")
 
-if user_input:
+if send_button and user_input:
     # Add user message to chat
     st.session_state.messages.append({"role": "user", "content": user_input})
     with st.chat_message("user"):
@@ -338,6 +343,10 @@ if user_input:
             except Exception as e:
                 st.error(f"Error calling OpenAI API: {e}")
                 st.session_state.messages.append({"role": "assistant", "content": f"I'm sorry, I encountered an error: {e}"})
+    
+    # Clear the input box after sending
+    st.session_state.user_message = ""
+    st.rerun()  # Using st.rerun() instead of experimental_rerun
 
 # Add reset button
 if st.button("Start New Conversation"):
@@ -347,4 +356,4 @@ if st.button("Start New Conversation"):
     st.session_state.messages = []
     st.session_state.feedback = {}
     st.session_state.conversation_id = str(uuid.uuid4())
-    st.experimental_rerun()
+    st.rerun()  # Using st.rerun() instead of experimental_rerun
