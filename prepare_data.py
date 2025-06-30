@@ -1,3 +1,4 @@
+print("Script started...")
 import os
 import requests
 import zipfile
